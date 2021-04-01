@@ -1,6 +1,8 @@
 package org.launchcode.javawebdevtechjobspersistent.controllers;
 
+import org.launchcode.javawebdevtechjobspersistent.models.Employer;
 import org.launchcode.javawebdevtechjobspersistent.models.Job;
+import org.launchcode.javawebdevtechjobspersistent.models.Skill;
 import org.launchcode.javawebdevtechjobspersistent.models.data.EmployerRepository;
 import org.launchcode.javawebdevtechjobspersistent.models.data.JobRepository;
 import org.launchcode.javawebdevtechjobspersistent.models.data.SkillRepository;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by LaunchCode
@@ -32,7 +35,9 @@ public class HomeController {
     @RequestMapping("")
     public String index(Model model) {
 
-        model.addAttribute("title", "My Jobs");
+        model.addAttribute("jobs", jobRepository.findAll());
+
+
 
         return "index";
     }
@@ -49,7 +54,15 @@ public class HomeController {
     @PostMapping("add")
     public String processAddJobForm(@ModelAttribute @Valid Job newJob,
                                        Errors errors, Model model, @RequestParam int employerId, @RequestParam List<Integer> skills) {
-        System.out.println(newJob);
+        Optional<Employer> employer = employerRepository.findById(employerId);
+
+        if (employer.isPresent()) {
+            newJob.setEmployer(employer.get());
+        }
+
+        List<Skill> skill = (List<Skill>) skillRepository.findAllById(skills);
+        newJob.setSkills(skill);
+
         jobRepository.save(newJob);
         if (errors.hasErrors()) {
             model.addAttribute("title", "Add Job");
@@ -63,6 +76,9 @@ public class HomeController {
 
     @GetMapping("view/{jobId}")
     public String displayViewJob(Model model, @PathVariable int jobId) {
+
+        Optional<Job> jobOptional = jobRepository.findById(jobId);
+        model.addAttribute("job", jobOptional.get());
 
         return "view";
     }

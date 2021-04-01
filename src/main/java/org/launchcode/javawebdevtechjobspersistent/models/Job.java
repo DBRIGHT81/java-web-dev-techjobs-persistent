@@ -18,6 +18,7 @@ public class Job extends AbstractEntity{
     @ManyToMany
     private List<Skill> skills = new ArrayList<>();
 
+
     public Job() {
     }
 
